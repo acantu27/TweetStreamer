@@ -2,7 +2,7 @@
 Tweet Streamer is a script designed to stream and save untruncated tweets with the specified keywords.
 
 #### Preview:
-
+![Tweet Streamer Preview][preview]
 
 ## Introduction
 Tweet Streamer is a python script built using Tweepy <sup>[1][1]</sup>. It streams **_live_** tweets and saves them to a database. Tweets are able to be filtered based on desired keywords or languages. This provides a large amount of data for Machine Learning or Data Science projects.
@@ -57,3 +57,4 @@ A `KeyboardInterrupt` such as `Ctrl + C` will stop the stream and close the data
 [1]: http://www.tweepy.org/
 [3]: https://developer.twitter.com/en/docs/basics/authentication/guides/access-tokens.html
 [2]: https://help.github.com/articles/cloning-a-repository/
+[preview]: images/preview.gif "Tweet Streamer Preview"
