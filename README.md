@@ -1,5 +1,5 @@
 # Tweet Streamer
-![Build](https://img.shields.io/badge/build-passing-brightgreen.svg "Build") ![License](https://img.shields.io/badge/license-MIT%20License-lightgrey.svg "License")
+![Build](https://img.shields.io/badge/build-passing-brightgreen.svg "Build") ![License](https://img.shields.io/badge/license-MIT%20License-lightgrey.svg "License") ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
 
 Tweet Streamer is a script designed to stream and save untruncated tweets with the specified keywords.
 
