@@ -1,4 +1,6 @@
 # Tweet Streamer
+![Build](https://img.shields.io/badge/build-passing-brightgreen.svg "Build") ![License](https://img.shields.io/badge/license-MIT%20License-lightgrey.svg "License")
+
 Tweet Streamer is a script designed to stream and save untruncated tweets with the specified keywords.
 
 #### Preview:
@@ -8,7 +10,7 @@ Tweet Streamer is a script designed to stream and save untruncated tweets with t
 Tweet Streamer is a python script utilizing Tweepy <sup>[1][1]</sup> to access Twitter's streaming API. It streams **live** tweets and saves them to a database. Tweets are able to be filtered based on desired keywords or languages. This provides a large amount of data for Machine Learning or Data Science projects.
 
 ## Requirements
-* Please see `requirements.txt` for the necessary dependencies
+* Please see [`requirements.txt`](https://github.com/acantu27/TweetStreamer/blob/master/requirements.txt) for the necessary dependencies
 * Requires Python 3+
 * Some features won't work on Windows such as the colored text
 
