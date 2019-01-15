@@ -1,7 +1,7 @@
 # Tweet Streamer
 ![Build](https://img.shields.io/badge/build-passing-brightgreen.svg "Build") ![License](https://img.shields.io/badge/license-MIT%20License-lightgrey.svg "License") ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
 
-Tweet Streamer is a script designed to stream and save untruncated tweets with the specified keywords.
+Tweet Streamer is a script designed to stream and save tweets with specified keywords.
 
 #### Preview:
 ![Tweet Streamer Preview][preview]
@@ -17,7 +17,7 @@ Tweet Streamer is a python script utilizing Tweepy <sup>[1][1]</sup> to access T
 ## Usage
 Clone the repository to the desired location. <sup>[2][2]</sup>
 
-Register an account with Twitter to generate your API key <sup>[3][3]</sup>. Insert your credentials into the `settings.py` file.
+Register an account with Twitter to generate your API key <sup>[3][3]</sup>. Insert your credentials into the [`settings.py`](https://github.com/acantu27/TweetStreamer/blob/master/tweetstreamer/settings.py) file.
 ```python
 CONSUMER_KEY = 'consumer_key_here'
 CONSUMER_SECRET = 'consumer_key_here'
@@ -25,7 +25,7 @@ ACCESS_TOKEN = 'access_token_here'
 ACCESS_SECRET = 'access_secret_here'
 ```
 
-Fill out the rest of the information in the `settings.py` file. `SEARCH_TERMS` specifies which keywords to filter. If you desire no filters, then leave the default values. `SEARCH_LANG` filters tweets based off the language specified. 
+Fill out the rest of the information in the [`settings.py`](https://github.com/acantu27/TweetStreamer/blob/master/tweetstreamer/settings.py) file. `SEARCH_TERMS` specifies which keywords to filter. If you desire no filters, then leave the default values. `SEARCH_LANG` filters tweets based off the language specified. 
 ```python
 SEARCH_TERMS = ["a", "e", "i", "o", "u"]
 SEARCH_LANG = ["en"]
@@ -50,6 +50,9 @@ python3 tweetstreamer.py -o tweet_stream.db
 ```
 
 A `KeyboardInterrupt` such as `Ctrl + C` will stop the stream and close the database if desired.
+
+## Other Information
+Tweet Streamer (TS) doesn't use the standard `on_data` function for tweets and instead relies on a  work-around to stream untruncated tweets. Depending on the keywords, one should be able to acquire around 1 million tweets over around 3 days. TS does not save tweets that were posted prior to the stream initialization (5 minutes - 5 weeks ago). This is `Part 1` of my Sentiment Analysis project.
 
 ## References
 1. [Tweepy Official Website](http://www.tweepy.org/)
