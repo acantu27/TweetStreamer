@@ -1,0 +1,14 @@
+# Output Files
+####################
+*.csv
+
+# Misc Files
+####################
+*.png
+*.jpg
+*.pyc
+*.pyo
+
+# Folders
+####################
+venv/
