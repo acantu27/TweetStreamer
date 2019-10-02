@@ -1,65 +1,52 @@
 # Tweet Streamer
-![Build](https://img.shields.io/badge/build-passing-brightgreen.svg "Build") ![License](https://img.shields.io/badge/license-MIT%20License-lightgrey.svg "License") ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT%20License-lightgrey.svg "License") ![Version](https://img.shields.io/badge/version-1.1-blue.svg)
 
-Tweet Streamer is a script designed to stream and save tweets with specified keywords.
+Tweet Streamer is a script designed to stream and save tweets for data analysis.
 
 #### Preview:
 ![Tweet Streamer Preview][preview]
 
 ## Introduction
-Tweet Streamer is a python script utilizing Tweepy <sup>[1][1]</sup> to access Twitter's streaming API. It streams **live** tweets and saves them to a database. Tweets are able to be filtered based on desired keywords or languages. This provides a large amount of data for Machine Learning or Data Science projects.
+Tweet Streamer is a python script utilizing Twitter's streaming API. It streams **live** tweets and saves their properties. Tweets are able to be filtered based on desired keywords or languages.
 
 ## Requirements
 * Please see [`requirements.txt`](https://github.com/acantu27/TweetStreamer/blob/master/requirements.txt) for the necessary dependencies
 * Requires Python 3+
-* Some features won't work on Windows such as the colored text
+* Some features might not be supported such as colored text output
 
 ## Usage
-Clone the repository to the desired location. <sup>[2][2]</sup>
+1. Clone the repository to the desired location.
 
-Register an account with Twitter to generate your API key <sup>[3][3]</sup>. Insert your credentials into the [`settings.py`](https://github.com/acantu27/TweetStreamer/blob/master/tweetstreamer/settings.py) file.
+2. [Register an account with Twitter to generate your API key][1]. 
+
+3. The setup guide should automatically run the first time. Alternatively you can run `tweetstreamer.py -s` to relaunch the setup. Or you can manually insert your credentials into the [`settings.py`](https://github.com/acantu27/TweetStreamer/blob/master/tweetstreamer/settings.py) file.
+
+    *Note: All values in the `settings.py` act as the default values.*
 ```python
 CONSUMER_KEY = 'consumer_key_here'
 CONSUMER_SECRET = 'consumer_key_here'
 ACCESS_TOKEN = 'access_token_here'
 ACCESS_SECRET = 'access_secret_here'
 ```
-
-Fill out the rest of the information in the [`settings.py`](https://github.com/acantu27/TweetStreamer/blob/master/tweetstreamer/settings.py) file. `SEARCH_TERMS` specifies which keywords to filter. If you desire no filters, then leave the default values. `SEARCH_LANG` filters tweets based off the language specified. 
-```python
-SEARCH_TERMS = ["a", "e", "i", "o", "u"]
-SEARCH_LANG = ["en"]
-```
-Tweet Streamer utilizes command line arguments.
+Tweet Streamer utilizes command line arguments. See help for more information `tweetstreamer.py -h`
 ```bash
-python3 tweetstreamer.py [-h] [-o] [FILE]
--o, --output      Saves tweets as the specified output file name      DEFAULT='output.db'
--h, --help        Shows this help message and exits
--v, --version     Displays programs current version
-```
-
-Initialize the stream and save with the default values.
-```bash
-python3 tweetstreamer.py
+optional arguments:
+  -h, --help            show this help message and exit
+  -o [OUTPUT], --output [OUTPUT]
+                        Saves tweets as specified file name
+  -t, --terse           Disables outputting tweets to console
+  -c, --color           Enables colored text in console
+  -v VERSION, --version VERSION
+                        Displays current version
+  -k KEYWORDS [KEYWORDS ...], --keywords KEYWORDS [KEYWORDS ...]
+                        Filter tweets by the specified keywords
+  -l LANGUAGES [LANGUAGES ...], --language LANGUAGES [LANGUAGES ...]
+                        Filter tweets by the specified language.
+  -s, --setup           Begins the setup process
 ```
 
-Initialize the stream and save with the specified file name `tweet_stream.db`.
-*Note: Output file must be a database (*.db) file.*
-```bash
-python3 tweetstreamer.py -o tweet_stream.db
-```
 
 A `KeyboardInterrupt` such as `Ctrl + C` will stop the stream and close the database if desired.
 
-## Other Information
-Tweet Streamer (TS) doesn't use the standard `on_data` function for tweets and instead relies on a  work-around to stream untruncated tweets. Depending on the keywords, one should be able to acquire around 1 million tweets over around 3 days. TS does not save tweets that were posted prior to the stream initialization (5 minutes - 5 weeks ago). This is `Part 1` of my Sentiment Analysis project.
-
-## References
-1. [Tweepy Official Website](http://www.tweepy.org/)
-2. [Github Documentation Cloning Repository](https://help.github.com/articles/cloning-a-repository/)
-3. [Twitter API Registration Documents](https://developer.twitter.com/en/docs/basics/authentication/guides/access-tokens.html)
-
-[1]: http://www.tweepy.org/
-[3]: https://developer.twitter.com/en/docs/basics/authentication/guides/access-tokens.html
-[2]: https://help.github.com/articles/cloning-a-repository/
+[1]: https://developer.twitter.com/
 [preview]: images/preview.gif "Tweet Streamer Preview"

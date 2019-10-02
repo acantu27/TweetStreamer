@@ -1,11 +1,9 @@
 import argparse
-import os
-import settings
-import sqlite3
+import datetime
+import sys
 import time
-
-from pyfiglet import Figlet
-from termcolor import colored
+import settings
+from output import Output
 from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy.streaming import StreamListener
@@ -13,13 +11,7 @@ from unidecode import unidecode
 
 
 class MyStreamListener(StreamListener):
-    """MyStreamListener: Inherited class from tweepy, StreamListener
-    Used to overwrite on_status() and on_error()"""
-
     def on_status(self, status):
-        """on_status: Overwrites StreamListener method
-        Refer to tweepy & Twitter API documentation to explain why/how this was done to pull the full text from tweets
-        'on_data' makes it difficult to pull tweets without being truncated"""
         try:
             if hasattr(status, 'retweeted_status'):
                 try:
@@ -32,99 +24,113 @@ class MyStreamListener(StreamListener):
                 except AttributeError:
                     tweet = status.text
 
-            # Remove commas and new lines to prevent issues with CSV files
             tweet = tweet.replace(',', '')
             tweet = tweet.replace('\n', ' ')
             tweet = unidecode(tweet)
 
             username = status.user.screen_name
-            date_time = status.created_at
             time_ms = status.timestamp_ms
-
-            print(colored(time_ms, 'red'), colored(date_time, 'red'),
-                  colored(username, 'yellow'), colored(tweet, 'blue'))
-
-            stream_db.insert_into(time_ms, date_time, username, tweet)
-
+            output_csv.write_tweet(time_ms, username, tweet)
+            output_csv.print_tweet(time_ms, username, tweet)
         except KeyError as e:
             print(str(e))
+
         return True
 
     def on_error(self, status):
-        """On Error: Prints error to console
-        :param status: error code"""
         print("Error: ", status)
 
     def on_disconnect(self, notice):
-        """on_disconnect: Prints notice to console
-        :param notice: notice
-        """
-        print(notice)
-        print("Disconnecting...")
+        print("Disconnected: ", notice)
 
 
-class Database:
-    def __init__(self, name):
-        self.filename = name
-        self.db_conn = sqlite3.connect(name)
-        self.db_cur = self.db_conn.cursor()
-
-    def create_table(self):
-        try:
-            self.db_cur.execute("CREATE TABLE IF NOT EXISTS twitter"
-            "(id INTEGER PRIMARY KEY AUTOINCREMENT, "
-            "time_ms INTEGER NOT NULL, "
-            "date_time REAL, "
-            "username REAL NOT NULL, "
-            "tweet REAL NOT NULL)")
-            self.db_conn.commit()
-        except Exception as e:
-            print(str(e))
-
-    def insert_into(self, time, date, user, tweet):
-        self.db_cur.execute("INSERT INTO twitter (time_ms, date_time, username, tweet) VALUES (?, ?, ?, ?)",
-                         (time, date, user, tweet))
-        self.db_conn.commit()
-
-    def close_db(self):
-        self.db_conn.close()
+def check_keys():
+    if (not settings.CONSUMER_KEY) or (not settings.CONSUMER_SECRET) or (not settings.ACCESS_TOKEN) or \
+            (not settings.ACCESS_SECRET):
+        return False
+    return True
 
 
-argpar = argparse.ArgumentParser(prog='Tweet Streamer',
-                                 usage='Script designed to stream tweets using specified keywords')
-argpar.add_argument('-o', '--output', nargs='?', action='store', dest='output', default='output.db',
-                    help='Saves tweets as specified output file name')
-argpar.add_argument('-v', '--version', action='store_true', help='Displays programs current version')
+def run_setup():
+    print("Beginning setup process:")
+    print("You will be prompted to enter in your API keys for Twitter.")
+    print("WARNING: These will overwrite the existing values, if any exist.")
+    settings.CONSUMER_KEY = input("Enter your Consumer Key: ")
+    settings.CONSUMER_SECRET = input("Enter your Consumer Secret: ")
+    settings.ACCESS_TOKEN = input("Enter your Access Token: ")
+    settings.ACCESS_SECRET = input("Enter your Access Secret: ")
+    print("Settings have been saved. Terminating...")
+    modify_settings()
+    sys.exit(0)
 
-args = argpar.parse_args()
 
-if(args.version == True):
-    print("Tweet Streamer 1.0")
-    os._exit(1)
+def modify_settings():
+    f = open('settings.py', 'w')
+    f.write('"""Twitter API Credentials"""\n')
+    f.write("CONSUMER_KEY = \'" + settings.CONSUMER_KEY + "\'\n")
+    f.write("CONSUMER_SECRET = '" + settings.CONSUMER_SECRET + "\'\n")
+    f.write("ACCESS_TOKEN = \'" + settings.ACCESS_TOKEN + "\'\n")
+    f.write("ACCESS_SECRET = \'" + settings.ACCESS_SECRET + "\'\n")
+    f.write('\n')
+    f.write('"""Default values used when filtering for specified tweets"""')
+    f.write('"""Vowels used to select for any tweet"""\n')
+    f.write('SEARCH_TERMS = ["a", "e", "i", "o", "u"]\n')
+    f.write('\n')
+    f.write('"""Search Language: Language filtered for specified tweets"""\n')
+    f.write('SEARCH_LANG = ["en"]\n')
+    f.write('\n')
+    current_dt = datetime.datetime.now()
+    f.write('API Credentials Updated: ' + current_dt.strftime('%m-%d-%Y %H:%M:%S'))
 
-f = Figlet(font='slant')
-print(f.renderText('Tweet Streamer'))
-print('Use \'Ctrl + c\' to stop the stream\n')
-print('Tweet Streamer will start in 5 seconds...')
-time.sleep(5)
 
-stream_db = Database(args.output)
-stream_db.create_table()
+def parse_args():
+    argpar = argparse.ArgumentParser(prog='Tweet Streamer',
+                                     usage='Script designed to stream tweets using specified keywords')
+    argpar.add_argument('-o', '--output', nargs='?', action='store', dest='output', default='output',
+                        help='Saves tweets as specified file name')
+    argpar.add_argument('-t', '--terse', action='store_true', dest='terse', default=False,
+                        help='Disables outputting tweets to console')
+    argpar.add_argument('-c', '--color', action='store_true', dest='color', default=False,
+                        help='Enables colored text in console')
+    argpar.add_argument('-v', '--version', help='Displays current version')
+    argpar.add_argument('-k', '--keywords', nargs='+', type=str, action='store', dest='keywords',
+                        default=settings.SEARCH_TERMS, help='Filter tweets by the specified keywords')
+    argpar.add_argument('-l', '--language', nargs='+', type=str, action='store', dest='languages',
+                        default=settings.SEARCH_LANG, help='Filter tweets by the specified language.')
+    argpar.add_argument('-s', '--setup', action='store_true', dest='setup', default=False,
+                        help='Begins the setup process')
+    args = argpar.parse_args()
+    return args
 
-try:
-    while True:
-        auth = OAuthHandler(settings.CONSUMER_KEY, settings.CONSUMER_SECRET)
-        auth.set_access_token(settings.ACCESS_TOKEN, settings.ACCESS_SECRET)
-        print(colored('STARTING TWEET STREAMER....', 'green'))
-        print('Time (ms)\tDate Time\tUsername\tTweet')
-        print('---------------------------------------------------------------')
-        twitterStream = Stream(auth, MyStreamListener(), tweet_mode='extended')
-        twitterStream.filter(languages=settings.SEARCH_LANG, track=settings.SEARCH_TERMS)
-except Exception as e:
-    print(str(e))
-    time.sleep(5)
-except KeyboardInterrupt:
-    print(colored('Stop requested...', 'red'))
-    print(colored('TERMINATING TWEET STREAM....', 'red'))
-    stream_db.close_db()
-    pass
+
+def main():
+    args = parse_args()
+
+    if not check_keys() or args.setup:
+        run_setup()
+
+    global output_csv
+    output_csv = Output(args.output, args.color, args.terse)
+    settings.SEARCH_TERMS = args.keywords
+    settings.SEARCH_LANG = args.languages
+    output_csv.print_banner()
+
+    try:
+        while True:
+            auth = OAuthHandler(settings.CONSUMER_KEY, settings.CONSUMER_SECRET)
+            auth.set_access_token(settings.ACCESS_TOKEN, settings.ACCESS_SECRET)
+            print('Time (ms)\tDate Time\tUsername\tTweet')
+            print('---------------------------------------------------------------')
+            twitter_stream = Stream(auth=auth, listener=MyStreamListener(), tweet_mode='extended')
+            twitter_stream.filter(languages=settings.SEARCH_LANG, track=settings.SEARCH_TERMS)
+    except Exception as e:
+        print(str(e))
+        time.sleep(5)
+    except KeyboardInterrupt:
+        print('Terminating Stream...')
+        output_csv.__exit__()
+        pass
+
+
+if __name__ == '__main__':
+    main()
